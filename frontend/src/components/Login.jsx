@@ -109,139 +109,136 @@ const Login = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', width: '100%', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-      <div style={{ width: '100%', maxWidth: '400px' }}>
-        <div className="card">
-          {/* Header */}
-          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-            <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '8px' }}>
-              {isRegisterMode ? "Create Account" : "Welcome Back"}
-            </h1>
-            <p style={{ color: '#666' }}>
-              {isRegisterMode 
-                ? "Join our crowdfunding community" 
-                : "Sign in to continue to your account"}
-            </p>
+    <div className="auth-page">
+      <div className="auth-card card">
+        {/* Header */}
+        <div className="auth-header">
+          <h1 className="auth-title">
+            {isRegisterMode ? "Create Account" : "Welcome Back"}
+          </h1>
+          <p className="auth-subtitle">
+            {isRegisterMode
+              ? "Join our crowdfunding community"
+              : "Sign in to continue to your account"}
+          </p>
+        </div>
+
+        {/* Alerts */}
+        {error && (
+          <div className="alert alert-error">
+            {error}
           </div>
+        )}
+        {success && (
+          <div className="alert alert-success">
+            {success}
+          </div>
+        )}
 
-          {/* Alerts */}
-          {error && (
-            <div style={{ background: '#fee', borderLeft: '4px solid #dc2626', color: '#991b1b', padding: '12px', borderRadius: '6px', marginBottom: '20px' }}>
-              {error}
-            </div>
-          )}
-          {success && (
-            <div style={{ background: '#d1fae5', borderLeft: '4px solid #16a34a', color: '#065f46', padding: '12px', borderRadius: '6px', marginBottom: '20px' }}>
-              {success}
-            </div>
-          )}
-
-          <form onSubmit={isRegisterMode ? handleRegister : handleSubmit}>
-            {/* Name Field (Register only) */}
-            {isRegisterMode && (
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', marginBottom: '8px' }}>
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="input"
-                  placeholder="John Doe"
-                  required
-                />
-              </div>
-            )}
-
-            {/* Email Field */}
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', marginBottom: '8px' }}>
-                Email Address
+        <form onSubmit={isRegisterMode ? handleRegister : handleSubmit}>
+          {/* Name Field (Register only) */}
+          {isRegisterMode && (
+            <div className="form-group">
+              <label className="form-label">
+                Full Name
               </label>
               <input
-                type="email"
-                name="email"
-                value={formData.email}
+                type="text"
+                name="name"
+                value={formData.name}
                 onChange={handleChange}
                 className="input"
-                placeholder="your.email@example.com"
+                placeholder="Manoj"
                 required
               />
             </div>
+          )}
 
-            {/* Password Field */}
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', marginBottom: '8px' }}>
-                Password
+          {/* Email Field */}
+          <div className="form-group">
+            <label className="form-label">
+              Email Address
+            </label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className="input"
+              placeholder="your.email@gmail.com"
+              required
+            />
+          </div>
+
+          {/* Password Field */}
+          <div className="form-group">
+            <label className="form-label">
+              Password
+            </label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              className="input"
+              placeholder="••••••••"
+              required
+              minLength={6}
+            />
+          </div>
+
+          {/* Role Field (Register only) */}
+          {isRegisterMode && (
+            <div className="form-group">
+              <label className="form-label">
+                Register As
               </label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
+              <select
+                name="role"
+                value={formData.role}
                 onChange={handleChange}
                 className="input"
-                placeholder="••••••••"
-                required
-                minLength={6}
-              />
+              >
+                <option value="user">Donor (Support campaigns)</option>
+                <option value="creator">Creator (Start campaigns)</option>
+              </select>
             </div>
+          )}
 
-            {/* Role Field (Register only) */}
-            {isRegisterMode && (
-              <div style={{ marginBottom: '24px' }}>
-                <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', marginBottom: '8px' }}>
-                  Register As
-                </label>
-                <select
-                  name="role"
-                  value={formData.role}
-                  onChange={handleChange}
-                  className="input"
-                >
-                  <option value="user">Donor (Support campaigns)</option>
-                  <option value="creator">Creator (Start campaigns)</option>
-                </select>
-              </div>
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn btn-primary btn-block"
+          >
+            {loading ? "Processing..." : isRegisterMode ? "Create Account" : "Sign In"}
+          </button>
+        </form>
+
+        {/* Toggle Login/Register */}
+        <div className="auth-footer">
+          <button
+            type="button"
+            onClick={() => {
+              setIsRegisterMode(!isRegisterMode);
+              setError("");
+              setSuccess("");
+              setFormData({ name: "", email: "", password: "", role: "user" });
+            }}
+            className="auth-toggle"
+          >
+            {isRegisterMode ? (
+              <>
+                Already have an account?{" "}
+                <span>Sign In</span>
+              </>
+            ) : (
+              <>
+                Don't have an account?{" "}
+                <span>Create One</span>
+              </>
             )}
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn btn-primary"
-              style={{ width: '100%', opacity: loading ? 0.5 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}
-            >
-              {loading ? 'Processing...' : isRegisterMode ? 'Create Account' : 'Sign In'}
-            </button>
-          </form>
-
-          {/* Toggle Login/Register */}
-          <div style={{ marginTop: '24px', textAlign: 'center' }}>
-            <button
-              type="button"
-              onClick={() => {
-                setIsRegisterMode(!isRegisterMode);
-                setError("");
-                setSuccess("");
-                setFormData({ name: "", email: "", password: "", role: "user" });
-              }}
-              style={{ background: 'none', border: 'none', fontSize: '14px', color: '#666' }}
-            >
-              {isRegisterMode ? (
-                <>
-                  Already have an account?{" "}
-                  <span style={{ fontWeight: '600', color: '#2563eb' }}>Sign In</span>
-                </>
-              ) : (
-                <>
-                  Don't have an account?{" "}
-                  <span style={{ fontWeight: '600', color: '#2563eb' }}>Create One</span>
-                </>
-              )}
-            </button>
-          </div>
+          </button>
         </div>
       </div>
     </div>
