@@ -1,108 +1,89 @@
-import { useState } from "react";
+import { useRef, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { API_URL } from "../utils/api";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import GlobalContext from "../context/GlobalContext";
 
 const Login = () => {
   const navigate = useNavigate();
+  const { handleLogin, handleRegister } = useContext(GlobalContext);
   const [isRegisterMode, setIsRegisterMode] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    role: "user",
-  });
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError("");
-  };
+  const nameRef = useRef();
+  const emailRef = useRef();
+  const passwordRef = useRef();
+  const roleRef = useRef();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
 
-    if (!formData.email || !formData.password) {
-      setError("Please enter email and password");
+    const email = emailRef.current.value;
+    const password = passwordRef.current.value;
+
+    if (!email || !password) {
+      toast.error("Please enter email and password");
       setLoading(false);
       return;
     }
 
     try {
-      const response = await fetch(`${API_URL}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          email: formData.email, 
-          password: formData.password 
-        }),
-      });
+      const result = await handleLogin(email, password);
 
-      const result = await response.json();
-
-      if (response.ok) {
-        sessionStorage.setItem("token", result.token);
-        sessionStorage.setItem("isLoggedin", "true");
-        sessionStorage.setItem("role", result.user.role);
-        sessionStorage.setItem("userName", result.user.name);
-        sessionStorage.setItem("userId", result.user.id);
-
-        setSuccess("Login successful! Redirecting...");
+      if (result.ok) {
+        toast.success("Login successful! Redirecting...");
+        const role = result.user.role;
+        const redirectPath = role === "creator" ? "/creator-dashboard" : role === "admin" ? "/admin-dashboard" : "/user-dashboard";
         setTimeout(() => {
-          navigate("/dashboard");
-        }, 1000);
+          navigate(redirectPath);
+        }, 800);
       } else {
-        setError(result.message || "Invalid credentials");
+        toast.error(result.message || "Invalid credentials");
       }
     } catch (error) {
-      setError("Login failed. Please check your connection.");
+      toast.error("Login failed. Please check your connection.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRegister = async (e) => {
+  const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
 
-    if (!formData.name || !formData.email || !formData.password) {
-      setError("Please fill all fields");
+    const name = nameRef.current.value;
+    const email = emailRef.current.value;
+    const password = passwordRef.current.value;
+    const role = roleRef.current.value;
+
+    if (!name || !email || !password) {
+      toast.error("Please fill all fields");
       setLoading(false);
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters");
+    if (password.length < 6) {
+      toast.error("Password must be at least 6 characters");
       setLoading(false);
       return;
     }
 
     try {
-      const response = await fetch(`${API_URL}/api/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      const result = await handleRegister({ name, email, password, role });
 
-      const result = await response.json();
-
-      if (response.ok) {
-        setSuccess("Registration successful! Please login.");
+      if (result.ok) {
+        toast.success("Registration successful! Please login.");
         setTimeout(() => {
           setIsRegisterMode(false);
-          setFormData({ name: "", email: "", password: "", role: "user" });
-          setSuccess("");
+          emailRef.current.value = "";
+          passwordRef.current.value = "";
         }, 2000);
       } else {
-        setError(result.message || "Registration failed");
+        toast.error(result.message || "Registration failed");
       }
     } catch (error) {
-      setError("Registration failed. Please try again.");
+      toast.error("Registration failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -123,19 +104,7 @@ const Login = () => {
           </p>
         </div>
 
-        {/* Alerts */}
-        {error && (
-          <div className="alert alert-error">
-            {error}
-          </div>
-        )}
-        {success && (
-          <div className="alert alert-success">
-            {success}
-          </div>
-        )}
-
-        <form onSubmit={isRegisterMode ? handleRegister : handleSubmit}>
+        <form onSubmit={isRegisterMode ? handleRegisterSubmit : handleSubmit}>
           {/* Name Field (Register only) */}
           {isRegisterMode && (
             <div className="form-group">
@@ -144,9 +113,7 @@ const Login = () => {
               </label>
               <input
                 type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
+                ref={nameRef}
                 className="input"
                 placeholder="Manoj"
                 required
@@ -161,9 +128,7 @@ const Login = () => {
             </label>
             <input
               type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
+              ref={emailRef}
               className="input"
               placeholder="your.email@gmail.com"
               required
@@ -177,9 +142,7 @@ const Login = () => {
             </label>
             <input
               type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
+              ref={passwordRef}
               className="input"
               placeholder="••••••••"
               required
@@ -194,9 +157,8 @@ const Login = () => {
                 Register As
               </label>
               <select
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
+                ref={roleRef}
+                defaultValue="user"
                 className="input"
               >
                 <option value="user">Donor (Support campaigns)</option>
@@ -221,9 +183,6 @@ const Login = () => {
             type="button"
             onClick={() => {
               setIsRegisterMode(!isRegisterMode);
-              setError("");
-              setSuccess("");
-              setFormData({ name: "", email: "", password: "", role: "user" });
             }}
             className="auth-toggle"
           >
@@ -241,6 +200,7 @@ const Login = () => {
           </button>
         </div>
       </div>
+      <ToastContainer position="top-right" autoClose={2000} />
     </div>
   );
 };

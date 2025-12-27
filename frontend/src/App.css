@@ -309,6 +309,42 @@ a {
   color: #dc2626;
 }
 
+.dashboard-badge-warning {
+  background: #fef3c7;
+  border-color: #f59e0b;
+  color: #d97706;
+}
+
+.dashboard-badge-success {
+  background: #d1fae5;
+  border-color: #10b981;
+  color: #047857;
+}
+
+.dashboard-badge-danger {
+  background: #fee2e2;
+  border-color: #ef4444;
+  color: #dc2626;
+}
+
+.dashboard-badge-purple {
+  background: #ede9fe;
+  border-color: #8b5cf6;
+  color: #6d28d9;
+}
+
+.dashboard-badge-orange {
+  background: #ffedd5;
+  border-color: #f97316;
+  color: #ea580c;
+}
+
+.dashboard-badge-primary {
+  background: #e0ebff;
+  border-color: #1f64ff;
+  color: #1f64ff;
+}
+
 .dashboard-main {
   max-width: 1400px;
   margin: 0 auto;
