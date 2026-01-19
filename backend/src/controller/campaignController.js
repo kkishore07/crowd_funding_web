@@ -50,6 +50,15 @@ const getAllCampaigns = async (req, res) => {
     // Sort by average rating (highest first), then by creation date
     const campaigns = await Campaign.find(filter)
       .sort({ averageRating: -1, createdAt: -1 });
+    
+    // Check and update expired campaigns
+    for (const campaign of campaigns) {
+      campaign.checkExpired();
+      if (campaign.isModified('isExpired')) {
+        await campaign.save();
+      }
+    }
+    
     res.status(200).json({ campaigns });
   } catch (err) {
     res.status(400).json({ message: "Failed to fetch campaigns", error: err.message });
@@ -60,6 +69,13 @@ const getCampaignById = async (req, res) => {
   try {
     const campaign = await Campaign.findById(req.params.id);
     if (!campaign) return res.status(404).json({ message: "Campaign not found" });
+    
+    // Check if expired
+    campaign.checkExpired();
+    if (campaign.isModified('isExpired')) {
+      await campaign.save();
+    }
+    
     res.status(200).json({ campaign });
   } catch (err) {
     res.status(400).json({ message: "Failed to fetch campaign", error: err.message });

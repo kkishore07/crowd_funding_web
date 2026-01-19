@@ -28,7 +28,7 @@ const AdminDashboard = () => {
         </div>
         
         <div className="dashboard-grid">
-          <div className="dashboard-card">
+          <div className="dashboard-card" onClick={() => navigate("/manage-users")}>
             <div className="dashboard-card-icon dashboard-card-icon-primary">👥</div>
             <div className="dashboard-card-content">
               <h3 className="dashboard-card-title">Manage Users</h3>
@@ -37,7 +37,7 @@ const AdminDashboard = () => {
             <button className="dashboard-card-button">Manage</button>
           </div>
 
-          <div className="dashboard-card">
+          <div className="dashboard-card" onClick={() => navigate("/campaigns")}>
             <div className="dashboard-card-icon dashboard-card-icon-success">📊</div>
             <div className="dashboard-card-content">
               <h3 className="dashboard-card-title">All Campaigns</h3>
@@ -55,7 +55,25 @@ const AdminDashboard = () => {
             <button className="dashboard-card-button">Review</button>
           </div>
 
-          <div className="dashboard-card">
+          <div className="dashboard-card" onClick={() => navigate("/refund-requests")}>
+            <div className="dashboard-card-icon dashboard-card-icon-warning">💰</div>
+            <div className="dashboard-card-content">
+              <h3 className="dashboard-card-title">Refund Requests</h3>
+              <p className="dashboard-card-description">Process pending refunds</p>
+            </div>
+            <button className="dashboard-card-button">Process</button>
+          </div>
+
+          <div className="dashboard-card" onClick={() => navigate("/suspicious-donations")}>
+            <div className="dashboard-card-icon dashboard-card-icon-danger">⚠️</div>
+            <div className="dashboard-card-content">
+              <h3 className="dashboard-card-title">Suspicious Activity</h3>
+              <p className="dashboard-card-description">Review flagged donations</p>
+            </div>
+            <button className="dashboard-card-button">Review</button>
+          </div>
+
+          <div className="dashboard-card" onClick={() => navigate("/settings")}>
             <div className="dashboard-card-icon dashboard-card-icon-orange">⚙️</div>
             <div className="dashboard-card-content">
               <h3 className="dashboard-card-title">Settings</h3>

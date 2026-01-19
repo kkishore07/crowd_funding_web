@@ -9,14 +9,24 @@ const Donate = () => {
   const token = sessionStorage.getItem("token");
   const [campaign, setCampaign] = useState(null);
   const [amount, setAmount] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("upi");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [warning, setWarning] = useState("");
 
   useEffect(() => {
     fetch(`${API_URL}/api/campaigns/${campaignId}`)
       .then(r => r.json())
-      .then(d => { setCampaign(d.campaign); setLoading(false); })
+      .then(d => { 
+        setCampaign(d.campaign); 
+        setLoading(false); 
+        
+        // Check if campaign has expired
+        if (d.campaign.isExpired) {
+          setError("This campaign has expired and is no longer accepting donations");
+        }
+      })
       .catch(() => { setError("Campaign not found"); setLoading(false); });
   }, [campaignId]);
 
@@ -32,6 +42,7 @@ const Donate = () => {
     }
 
     setLoading(true);
+    setWarning("");
     try {
       const res = await fetch(`${API_URL}/api/donations`, {
         method: "POST",
@@ -39,7 +50,11 @@ const Donate = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ campaignId, amount: parseFloat(amount) }),
+        body: JSON.stringify({ 
+          campaignId, 
+          amount: parseFloat(amount),
+          paymentMethod 
+        }),
       });
 
       const data = await res.json();
@@ -54,8 +69,14 @@ const Donate = () => {
       
       if (res.ok) {
         setSuccess("Donation successful!");
+        
+        // Show warning if donation was flagged
+        if (data.warning) {
+          setWarning(data.warning);
+        }
+        
         setAmount("");
-        setTimeout(() => navigate("/campaigns"), 2000);
+        setTimeout(() => navigate("/campaigns"), 3000);
       } else {
         setError(data.message || "Donation failed");
       }
@@ -70,6 +91,7 @@ const Donate = () => {
   if (!campaign) return <div className="dashboard-container"><p className="donation-error">Campaign not found</p></div>;
 
   const progress = Math.min((campaign.currentAmount / campaign.targetAmount) * 100, 100);
+  const daysLeft = Math.max(0, Math.ceil((new Date(campaign.endDate) - new Date()) / (1000 * 60 * 60 * 24)));
 
   return (
     <div className="dashboard-container">
@@ -82,6 +104,22 @@ const Donate = () => {
           <div className="donation-info">
             <h3>{campaign.title}</h3>
             <p>{campaign.description}</p>
+            <div style={{ marginTop: "12px", display: "flex", gap: "16px", fontSize: "0.9rem", color: "#666" }}>
+              <span>📅 {daysLeft} days left</span>
+              <span>⭐ {campaign.averageRating.toFixed(1)}/5 ({campaign.totalRatings} ratings)</span>
+            </div>
+            {campaign.isExpired && (
+              <div style={{
+                marginTop: "12px",
+                padding: "12px",
+                backgroundColor: "#ff6b6b",
+                color: "white",
+                borderRadius: "4px",
+                fontWeight: "500"
+              }}>
+                ⚠️ This campaign has expired
+              </div>
+            )}
           </div>
 
           <div className="donation-progress">
@@ -93,6 +131,18 @@ const Donate = () => {
 
           {error && <div className="donation-error">{error}</div>}
           {success && <div className="donation-success">{success}</div>}
+          {warning && (
+            <div style={{
+              padding: "12px",
+              backgroundColor: "#fff3cd",
+              color: "#856404",
+              borderRadius: "4px",
+              marginBottom: "16px",
+              border: "1px solid #ffeaa7"
+            }}>
+              ⚠️ {warning}
+            </div>
+          )}
 
           <form onSubmit={handleDonate} className="donation-form">
             <div className="form-group">
@@ -106,9 +156,32 @@ const Donate = () => {
                 min="1"
                 step="0.01"
                 required
+                disabled={campaign.isExpired}
               />
             </div>
-            <button type="submit" disabled={loading} className="btn btn-primary btn-lg">
+
+            <div className="form-group">
+              <label className="form-label">Payment Method *</label>
+              <select
+                value={paymentMethod}
+                onChange={(e) => setPaymentMethod(e.target.value)}
+                className="input"
+                required
+                disabled={campaign.isExpired}
+              >
+                <option value="upi">UPI</option>
+                <option value="credit_card">Credit Card</option>
+                <option value="debit_card">Debit Card</option>
+                <option value="net_banking">Net Banking</option>
+                <option value="wallet">Wallet</option>
+              </select>
+            </div>
+
+            <button 
+              type="submit" 
+              disabled={loading || campaign.isExpired} 
+              className="btn btn-primary btn-lg"
+            >
               {loading ? "Processing..." : "Donate Now"}
             </button>
             <button type="button" onClick={() => navigate("/campaigns")} className="btn btn-secondary btn-lg">

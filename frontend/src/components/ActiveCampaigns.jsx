@@ -133,6 +133,24 @@ const ActiveCampaigns = () => {
                   </div>
                   <div>
                     <strong>End Date:</strong> {new Date(campaign.endDate).toLocaleDateString()}
+                    {campaign.isExpired && (
+                      <span style={{ 
+                        marginLeft: "8px", 
+                        backgroundColor: "#ff6b6b", 
+                        color: "white", 
+                        padding: "2px 6px", 
+                        borderRadius: "3px", 
+                        fontSize: "0.75rem",
+                        fontWeight: "bold"
+                      }}>
+                        EXPIRED
+                      </span>
+                    )}
+                    {!campaign.isExpired && (
+                      <span style={{ marginLeft: "8px", color: "#666", fontSize: "0.85rem" }}>
+                        ({Math.max(0, Math.ceil((new Date(campaign.endDate) - new Date()) / (1000 * 60 * 60 * 24)))} days left)
+                      </span>
+                    )}
                   </div>
                 </div>
 

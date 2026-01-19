@@ -46,7 +46,7 @@ const UserDashboard = () => {
             <button className="dashboard-card-button">View</button>
           </div>
 
-          <div className="dashboard-card">
+          <div className="dashboard-card" onClick={() => navigate("/profile")}>
             <div className="dashboard-card-icon dashboard-card-icon-purple">👤</div>
             <div className="dashboard-card-content">
               <h3 className="dashboard-card-title">My Profile</h3>

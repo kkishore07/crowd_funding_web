@@ -10,6 +10,8 @@ import Donate from "./components/Donate";
 import MyDonations from "./components/MyDonations";
 import ActiveCampaigns from "./components/ActiveCampaigns";
 import Analytics from "./components/Analytics";
+import RefundRequests from "./components/RefundRequests";
+import SuspiciousDonations from "./components/SuspiciousDonations";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { GlobalProvider } from "./context/GlobalContext";
 import "./App.css";
@@ -98,6 +100,22 @@ function App() {
             element={
               <ProtectedRoute>
                 <Analytics />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/refund-requests" 
+            element={
+              <ProtectedRoute>
+                <RefundRequests />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/suspicious-donations" 
+            element={
+              <ProtectedRoute>
+                <SuspiciousDonations />
               </ProtectedRoute>
             } 
           />
