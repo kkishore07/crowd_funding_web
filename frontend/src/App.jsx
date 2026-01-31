@@ -4,6 +4,7 @@ import UserDashboard from "./components/dashboards/UserDashboard";
 import CreatorDashboard from "./components/dashboards/CreatorDashboard";
 import AdminDashboard from "./components/dashboards/AdminDashboard";
 import CreateCampaign from "./components/CreateCampaign";
+import EditCampaign from "./components/EditCampaign";
 import CampaignsList from "./components/CampaignsList";
 import CampaignApproval from "./components/CampaignApproval";
 import Donate from "./components/Donate";
@@ -12,6 +13,8 @@ import ActiveCampaigns from "./components/ActiveCampaigns";
 import Analytics from "./components/Analytics";
 import RefundRequests from "./components/RefundRequests";
 import SuspiciousDonations from "./components/SuspiciousDonations";
+import Settings from "./components/Settings";
+import ManageUsers from "./components/ManageUsers";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { GlobalProvider } from "./context/GlobalContext";
 import "./App.css";
@@ -64,10 +67,10 @@ function App() {
             } 
           />
           <Route 
-            path="/campaign-approval" 
+            path="/edit-campaign/:campaignId" 
             element={
               <ProtectedRoute>
-                <CampaignApproval />
+                <EditCampaign />
               </ProtectedRoute>
             } 
           />
@@ -76,6 +79,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Donate />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/campaign-approval" 
+            element={
+              <ProtectedRoute>
+                <CampaignApproval />
               </ProtectedRoute>
             } 
           />
@@ -116,6 +127,22 @@ function App() {
             element={
               <ProtectedRoute>
                 <SuspiciousDonations />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/manage-users" 
+            element={
+              <ProtectedRoute>
+                <ManageUsers />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/settings" 
+            element={
+              <ProtectedRoute>
+                <Settings />
               </ProtectedRoute>
             } 
           />

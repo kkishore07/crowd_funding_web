@@ -9,11 +9,13 @@ const CreateCampaign = () => {
   const navigate = useNavigate();
   const { user, handleCreateCampaign } = useContext(GlobalContext);
   const [loading, setLoading] = useState(false);
+  const [imagePreview, setImagePreview] = useState(null);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     targetAmount: "",
     endDate: "",
+    image: null,
   });
 
   if (!user || (user.role !== "creator" && user.role !== "admin")) {
@@ -23,6 +25,38 @@ const CreateCampaign = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
+      if (!allowedTypes.includes(file.type)) {
+        toast.error("Only image files are allowed (jpeg, jpg, png, gif, webp)");
+        return;
+      }
+      
+      // Validate file size (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Image size should be less than 5MB");
+        return;
+      }
+
+      setFormData(prev => ({ ...prev, image: file }));
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setFormData(prev => ({ ...prev, image: null }));
+    setImagePreview(null);
   };
 
   const handleSubmit = async (e) => {
@@ -37,7 +71,7 @@ const CreateCampaign = () => {
     
     if (result.ok) {
       toast.success("Campaign created! Awaiting approval.");
-      setTimeout(() => navigate("/creator-dashboard"), 800);
+      setTimeout(() => navigate("/active-campaigns"), 800);
     } else {
       toast.error(result.message || "Failed to create campaign");
     }
@@ -67,6 +101,40 @@ const CreateCampaign = () => {
             <div className="form-group">
               <label className="form-label">End Date *</label>
               <input type="date" name="endDate" value={formData.endDate} onChange={handleChange} className="input" required />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Campaign Image</label>
+              <input 
+                type="file" 
+                name="image" 
+                onChange={handleImageChange} 
+                className="input" 
+                accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+              />
+              {imagePreview && (
+                <div style={{ marginTop: "10px", position: "relative" }}>
+                  <img 
+                    src={imagePreview} 
+                    alt="Campaign preview" 
+                    style={{ maxWidth: "300px", maxHeight: "200px", borderRadius: "8px" }}
+                  />
+                  <button 
+                    type="button" 
+                    onClick={removeImage}
+                    style={{ 
+                      marginTop: "5px", 
+                      padding: "5px 10px", 
+                      backgroundColor: "#dc3545", 
+                      color: "white", 
+                      border: "none", 
+                      borderRadius: "4px", 
+                      cursor: "pointer" 
+                    }}
+                  >
+                    Remove Image
+                  </button>
+                </div>
+              )}
             </div>
             <div className="form-actions">
               <button type="submit" disabled={loading} className="btn btn-primary btn-lg">

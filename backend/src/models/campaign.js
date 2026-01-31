@@ -12,6 +12,7 @@ const campaignSchema = new mongoose.Schema(
     creatorName: { type: String, required: true },
     status: { type: String, enum: ["pending", "approved", "rejected", "closed"], default: "pending" },
     rejectionReason: { type: String, default: null },
+    image: { type: String, default: null }, // Image file path
     averageRating: { type: Number, default: 0, min: 0, max: 5 },
     totalRatings: { type: Number, default: 0, min: 0 },
     ratings: [{

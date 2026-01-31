@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../utils/api";
 import RatingStars from "./RatingStars";
+import CampaignQRCode from "./CampaignQRCode";
 import "../styles/campaign.css";
 
 const ActiveCampaigns = () => {
@@ -82,83 +83,145 @@ const ActiveCampaigns = () => {
             </button>
           </div>
         ) : (
-          <div style={{ display: "grid", gap: "20px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "20px" }}>
             {campaigns.map((campaign) => (
-              <div key={campaign._id} className="campaign-card" style={{ padding: "20px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: "12px" }}>
-                  <div>
-                    <h3 style={{ marginBottom: "8px" }}>{campaign.title}</h3>
-                    <div style={{ display: "flex", gap: "12px", alignItems: "center", marginBottom: "8px" }}>
-                      <span className={`dashboard-badge ${getStatusBadge(campaign.status)}`}>
+              <div key={campaign._id} className="campaign-card" style={{ padding: "0", display: "flex", flexDirection: "column", height: "100%" }}>
+                {campaign.image ? (
+                  <img 
+                    src={`${API_URL}/uploads/${campaign.image}`} 
+                    alt={campaign.title}
+                    style={{ 
+                      width: "100%", 
+                      height: "160px", 
+                      objectFit: "cover",
+                      borderRadius: "12px 12px 0 0"
+                    }}
+                  />
+                ) : (
+                  <div style={{
+                    width: "100%",
+                    height: "160px",
+                    backgroundColor: "#f0f0f0",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "48px",
+                    borderRadius: "12px 12px 0 0"
+                  }}>🎯</div>
+                )}
+                <div style={{ padding: "16px", flex: 1, display: "flex", flexDirection: "column" }}>
+                  {/* Title and Status */}
+                  <div style={{ marginBottom: "8px" }}>
+                    <h3 style={{ marginBottom: "6px", fontSize: "16px", fontWeight: "700" }}>{campaign.title}</h3>
+                    <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+                      <span className={`dashboard-badge ${getStatusBadge(campaign.status)}`} style={{ fontSize: "11px", padding: "3px 8px" }}>
                         {campaign.status.toUpperCase()}
                       </span>
                       {campaign.status === "approved" && campaign.totalRatings > 0 && (
-                        <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "3px" }}>
                           <RatingStars rating={campaign.averageRating || 0} readOnly size="small" />
-                          <span style={{ fontSize: "12px", color: "#666" }}>
+                          <span style={{ fontSize: "11px", color: "#666" }}>
                             ({campaign.totalRatings})
                           </span>
                         </div>
                       )}
                     </div>
                   </div>
-                  <div style={{ textAlign: "right" }}>
-                    <p style={{ fontSize: "14px", color: "#666" }}>Target</p>
-                    <p style={{ fontSize: "20px", fontWeight: "bold" }}>₹{campaign.targetAmount.toLocaleString('en-IN')}</p>
-                  </div>
-                </div>
 
-                <p style={{ marginBottom: "16px", color: "#666" }}>{campaign.description}</p>
+                  {/* Description */}
+                  <p style={{ marginBottom: "10px", color: "#666", fontSize: "13px", lineHeight: "1.4" }}>{campaign.description.substring(0, 80)}...</p>
 
-                <div style={{ marginBottom: "16px" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-                    <span>Progress: {getProgress(campaign.currentAmount, campaign.targetAmount)}%</span>
-                    <span>₹{campaign.currentAmount.toLocaleString('en-IN')} raised</span>
+                  {/* Target Amount */}
+                  <div style={{ marginBottom: "10px" }}>
+                    <p style={{ fontSize: "12px", color: "#999", marginBottom: "2px" }}>Target Amount</p>
+                    <p style={{ fontSize: "18px", fontWeight: "700", color: "#1f64ff" }}>₹{campaign.targetAmount.toLocaleString('en-IN')}</p>
                   </div>
-                  <div style={{ height: "8px", background: "#e5e7eb", borderRadius: "4px", overflow: "hidden" }}>
-                    <div 
-                      style={{ 
-                        height: "100%", 
-                        background: campaign.status === "approved" ? "var(--primary)" : "#ccc",
-                        width: `${getProgress(campaign.currentAmount, campaign.targetAmount)}%`,
-                        transition: "width 0.3s ease"
-                      }} 
-                    />
-                  </div>
-                </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px", fontSize: "14px" }}>
-                  <div>
-                    <strong>Created:</strong> {new Date(campaign.createdAt).toLocaleDateString()}
+                  {/* Progress */}
+                  <div style={{ marginBottom: "10px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px", fontSize: "12px" }}>
+                      <span>Progress: {getProgress(campaign.currentAmount, campaign.targetAmount)}%</span>
+                      <span style={{ fontWeight: "600" }}>₹{campaign.currentAmount.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div style={{ height: "6px", background: "#e5e7eb", borderRadius: "3px", overflow: "hidden" }}>
+                      <div 
+                        style={{ 
+                          height: "100%", 
+                          background: campaign.status === "approved" ? "#1f64ff" : "#ccc",
+                          width: `${getProgress(campaign.currentAmount, campaign.targetAmount)}%`,
+                          transition: "width 0.3s ease"
+                        }} 
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <strong>End Date:</strong> {new Date(campaign.endDate).toLocaleDateString()}
-                    {campaign.isExpired && (
-                      <span style={{ 
-                        marginLeft: "8px", 
-                        backgroundColor: "#ff6b6b", 
-                        color: "white", 
-                        padding: "2px 6px", 
-                        borderRadius: "3px", 
-                        fontSize: "0.75rem",
-                        fontWeight: "bold"
-                      }}>
-                        EXPIRED
-                      </span>
+
+                  {/* Dates */}
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", fontSize: "12px", marginBottom: "12px" }}>
+                    <div>
+                      <p style={{ color: "#999", marginBottom: "2px" }}>Created:</p>
+                      <p style={{ fontWeight: "600" }}>{new Date(campaign.createdAt).toLocaleDateString()}</p>
+                    </div>
+                    <div>
+                      <p style={{ color: "#999", marginBottom: "2px" }}>End Date:</p>
+                      <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                        <p style={{ fontWeight: "600" }}>{new Date(campaign.endDate).toLocaleDateString()}</p>
+                        {campaign.isExpired && (
+                          <span style={{ 
+                            backgroundColor: "#ff6b6b", 
+                            color: "white", 
+                            padding: "1px 4px", 
+                            borderRadius: "2px", 
+                            fontSize: "0.7rem",
+                            fontWeight: "bold"
+                          }}>
+                            EXPIRED
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {campaign.status === "rejected" && campaign.rejectionReason && (
+                    <div style={{ marginTop: "8px", padding: "10px", background: "#fee", borderRadius: "4px", color: "#c00", fontSize: "12px" }}>
+                      <strong>Rejection:</strong> {campaign.rejectionReason}
+                    </div>
+                  )}
+
+                  {/* Buttons Container */}
+                  <div style={{ marginTop: "auto", paddingTop: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                    {/* Edit button for pending and approved campaigns */}
+                    {(campaign.status === "pending" || campaign.status === "approved") && (
+                      <button 
+                        onClick={() => navigate(`/edit-campaign/${campaign._id}`)}
+                        className="btn btn-primary"
+                        style={{ width: "100%", padding: "8px 12px", fontSize: "13px" }}
+                      >
+                        ✏️ Edit
+                      </button>
                     )}
-                    {!campaign.isExpired && (
-                      <span style={{ marginLeft: "8px", color: "#666", fontSize: "0.85rem" }}>
-                        ({Math.max(0, Math.ceil((new Date(campaign.endDate) - new Date()) / (1000 * 60 * 60 * 24)))} days left)
-                      </span>
+
+                    {/* QR Code for sharing approved campaigns */}
+                    {campaign.status === "approved" && (
+                      <button 
+                        className="btn btn-success"
+                        style={{ width: "100%", padding: "8px 12px", fontSize: "13px", backgroundColor: "#28a745" }}
+                        onClick={() => {
+                          const el = document.getElementById(`qr-toggle-${campaign._id}`);
+                          if (el) el.click();
+                        }}
+                      >
+                        📱 Share QR Code
+                      </button>
                     )}
                   </div>
-                </div>
 
-                {campaign.status === "rejected" && campaign.rejectionReason && (
-                  <div style={{ marginTop: "12px", padding: "12px", background: "#fee", borderRadius: "4px", color: "#c00" }}>
-                    <strong>Rejection Reason:</strong> {campaign.rejectionReason}
-                  </div>
-                )}
+                  {/* QR Code Component */}
+                  {campaign.status === "approved" && (
+                    <div style={{ marginTop: "8px", display: "none" }} id={`qr-toggle-${campaign._id}`}>
+                      <CampaignQRCode campaignId={campaign._id} campaignTitle={campaign.title} />
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>

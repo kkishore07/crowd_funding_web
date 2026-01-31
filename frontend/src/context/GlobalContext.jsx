@@ -149,13 +149,25 @@ const GlobalProvider = ({ children }) => {
       console.log("API URL:", `${API_URL}/api/campaigns`);
       console.log("Token:", token ? "Present" : "Missing");
 
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append("title", campaignData.title);
+      formData.append("description", campaignData.description);
+      formData.append("targetAmount", campaignData.targetAmount);
+      formData.append("endDate", campaignData.endDate);
+      
+      // Add image if present
+      if (campaignData.image) {
+        formData.append("image", campaignData.image);
+      }
+
       const response = await fetch(`${API_URL}/api/campaigns`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
+          // Don't set Content-Type header - let browser set it with boundary for FormData
         },
-        body: JSON.stringify(campaignData),
+        body: formData,
       });
 
       console.log("Response status:", response.status);

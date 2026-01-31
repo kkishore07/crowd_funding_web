@@ -4,6 +4,7 @@ const createCampaign = async (req, res) => {
   try {
     console.log("Create campaign request received");
     console.log("Request body:", req.body);
+    console.log("Request file:", req.file);
     console.log("User from token:", req.user);
     
     const { title, description, targetAmount, endDate } = req.body;
@@ -23,14 +24,21 @@ const createCampaign = async (req, res) => {
 
     console.log("Creating campaign for user:", user.name || user.email);
 
-    const campaign = await Campaign.create({
+    const campaignData = {
       title,
       description,
       targetAmount,
       endDate,
       creator: req.user.id,
       creatorName: user.name || user.email,
-    });
+    };
+
+    // Add image path if file was uploaded
+    if (req.file) {
+      campaignData.image = req.file.filename;
+    }
+
+    const campaign = await Campaign.create(campaignData);
 
     console.log("Campaign created successfully:", campaign._id);
     res.status(201).json({ message: "Campaign created", campaign });
@@ -47,17 +55,12 @@ const getAllCampaigns = async (req, res) => {
     if (status) filter.status = status;
     if (search) filter.title = { $regex: search, $options: "i" };
 
+    // Exclude expired campaigns (end date has passed)
+    filter.endDate = { $gt: new Date() };
+
     // Sort by average rating (highest first), then by creation date
     const campaigns = await Campaign.find(filter)
       .sort({ averageRating: -1, createdAt: -1 });
-    
-    // Check and update expired campaigns
-    for (const campaign of campaigns) {
-      campaign.checkExpired();
-      if (campaign.isModified('isExpired')) {
-        await campaign.save();
-      }
-    }
     
     res.status(200).json({ campaigns });
   } catch (err) {
@@ -70,10 +73,9 @@ const getCampaignById = async (req, res) => {
     const campaign = await Campaign.findById(req.params.id);
     if (!campaign) return res.status(404).json({ message: "Campaign not found" });
     
-    // Check if expired
-    campaign.checkExpired();
-    if (campaign.isModified('isExpired')) {
-      await campaign.save();
+    // Check if campaign has expired
+    if (new Date() > campaign.endDate) {
+      return res.status(400).json({ message: "This campaign has expired" });
     }
     
     res.status(200).json({ campaign });
@@ -96,9 +98,19 @@ const updateCampaign = async (req, res) => {
     const campaign = await Campaign.findById(req.params.id);
     if (!campaign) return res.status(404).json({ message: "Campaign not found" });
     if (campaign.creator.toString() !== req.user.id) return res.status(403).json({ message: "Forbidden" });
-    if (campaign.status !== "pending") return res.status(400).json({ message: "Can only edit pending campaigns" });
+    if (campaign.status !== "pending" && campaign.status !== "approved") return res.status(400).json({ message: "Can only edit pending or approved campaigns" });
 
-    Object.assign(campaign, req.body);
+    // Update basic fields
+    campaign.title = req.body.title || campaign.title;
+    campaign.description = req.body.description || campaign.description;
+    campaign.targetAmount = req.body.targetAmount || campaign.targetAmount;
+    campaign.endDate = req.body.endDate || campaign.endDate;
+
+    // Update image if new file was uploaded
+    if (req.file) {
+      campaign.image = req.file.filename;
+    }
+
     await campaign.save();
     res.status(200).json({ message: "Campaign updated", campaign });
   } catch (err) {

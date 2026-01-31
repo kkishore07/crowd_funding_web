@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../utils/api";
 import RatingStars from "./RatingStars";
+import CampaignQRCode from "./CampaignQRCode";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "../styles/campaign.css";
@@ -102,7 +103,16 @@ const CampaignsList = () => {
               
               return (
               <div key={c._id} className="campaign-card">
-                {/* <div className="campaign-image">🎯</div> */}
+                {c.image ? (
+                  <img 
+                    src={`${API_URL}/uploads/${c.image}`} 
+                    alt={c.title}
+                    className="campaign-image"
+                    style={{ objectFit: "cover" }}
+                  />
+                ) : (
+                  <div className="campaign-image">🎯</div>
+                )}
                 <div className="campaign-content">
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
                     <h3 className="campaign-title">{c.title}</h3>
@@ -151,6 +161,9 @@ const CampaignsList = () => {
                     </div>
                     <div className="progress-text">₹{c.currentAmount} of ₹{c.targetAmount}</div>
                   </div>
+                  
+                  {/* QR Code for sharing */}
+                  <CampaignQRCode campaignId={c._id} campaignTitle={c.title} />
                 </div>
                 <div className="campaign-footer">
                   {userRole === "user" && (

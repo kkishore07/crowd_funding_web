@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { API_URL } from "../utils/api";
+import CampaignQRCode from "./CampaignQRCode";
 import "../styles/donation.css";
 
 const Donate = () => {
@@ -101,6 +102,19 @@ const Donate = () => {
         </div>
 
         <div className="donation-form-container">
+          {campaign.image && (
+            <img 
+              src={`${API_URL}/uploads/${campaign.image}`} 
+              alt={campaign.title}
+              style={{ 
+                width: "100%", 
+                maxHeight: "300px", 
+                objectFit: "cover",
+                borderRadius: "12px",
+                marginBottom: "20px"
+              }}
+            />
+          )}
           <div className="donation-info">
             <h3>{campaign.title}</h3>
             <p>{campaign.description}</p>
@@ -127,6 +141,11 @@ const Donate = () => {
             <div style={{ height: "6px", background: "#e5e7eb", borderRadius: "3px", marginTop: "8px", overflow: "hidden" }}>
               <div style={{ height: "100%", background: "var(--primary)", width: `${progress}%` }} />
             </div>
+          </div>
+
+          {/* Share Campaign QR Code */}
+          <div style={{ marginTop: "20px" }}>
+            <CampaignQRCode campaignId={campaign._id} campaignTitle={campaign.title} />
           </div>
 
           {error && <div className="donation-error">{error}</div>}
